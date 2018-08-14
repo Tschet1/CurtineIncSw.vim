@@ -1,10 +1,13 @@
 function! FindInc()
   let dirname=fnamemodify(expand("%:p"), ":h")
-  let cmd="find . " . dirname . " -type f -iname " . t:IncSw . " | head -n1 | tr -d '\n'"
+  let target_file=b:inc_sw
+  let cmd="find " . dirname . " . -type f -iname \"" . target_file . "\" -print -quit"
+  let find_res=system(cmd)
+  if filereadable(find_res)
+    return 0
+  endif
 
-  let findRes=system(cmd)
-
-  exe "e " findRes
+  exe "e " find_res
 endfun
 
 function! FindIncGit()
@@ -14,15 +17,14 @@ function! FindIncGit()
 endfun
 
 function! CurtineIncSw()
-  if exists("t:IncSw")
+  if exists("b:inc_sw")
     e#
     return 0
   endif
-
   if match(expand("%"), '\.c') > 0
-    let t:IncSw=substitute(expand("%:t"), '\.c\(.*\)', '.h*', "")
+    let b:inc_sw=substitute(expand("%:t"), '\.c\(.*\)', '.h*', "")
   elseif match(expand("%"), "\\.h") > 0
-    let t:IncSw=substitute(expand("%:t"), '\.h\(.*\)', '.c*', "")
+    let b:inc_sw=substitute(expand("%:t"), '\.h\(.*\)', '.c*', "")
   endif
 
   let output=system('git rev-parse')
